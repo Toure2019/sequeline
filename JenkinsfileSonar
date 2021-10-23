@@ -1,0 +1,98 @@
+#!/usr/bin/env groovy
+//Version templatefile node : 1.5.1
+//déclaration de la shared library build_libs
+@Library('build_libs') _
+
+def options = [
+  //Paramètre optionnel :Id de la config globale npm à utiliser
+  //'NPM_CONFIG_ID': '{{npm-config-id}}',
+  //Paramètre optionnel : Clé SonarQube pour les analyses
+  //PROJECT_SONAR_KEY: '{{project-sonar-key}}',
+  //Propriétés spécifiques au job
+  // Paramètre obligatoire : Nombre de build a conserver dans l'historique
+  NUM_TO_KEEP : 10,
+  // Paramètre obligatoire : Version de node utilisée pour le build
+  NODE_VERSION: 'carbon'
+]
+
+//Valorisation des options par défaut
+options = defaultBuildOptions(options)
+
+//Propriétés du job
+properties([
+  [$class: 'BuildConfigProjectProperty'],
+  //Conservation des 10 dernières éxecutions
+  buildDiscarder(logRotator(numToKeepStr: "${options['NUM_TO_KEEP']}")),
+  //Paramètres du build sonar
+  parameters([string(defaultValue: '', description: 'Tag de la release sur lequelle lancer l\'analyse', name: 'TAG_RELEASE')])
+])
+
+//Le nom du build prend le nom de la version a analyser
+currentBuild.displayName = "${TAG_RELEASE}"
+
+//Plugin timestamp pour afficher le temps à chaque ligne de log
+timestamps {
+  withTools([
+    [name: 'node', version: "${options['NODE_VERSION']}"],
+    [name: 'sonar-scanner', image: 'sonar-scanner_v2.8', registry: 'eul']
+  ]) {
+    try {
+      stage('Récupération code source') {
+        checkout scm
+      }
+      stage('Extraction information package.json') {
+        container('node') {
+          if (!fileExists('package.json')) {
+            currentBuild.result = 'FAILURE'
+            error 'Le fichier package.json n\'est pas présent à la racine du projet'
+          }
+          //Récupération de l'attribut name de package.json
+          env.NAME = sh(script: "node -p \"require('./package.json').name\"", returnStdout: true).trim()
+          println "Nom extrait du package.json : ${env.NAME}"
+        }
+      }
+      withNPM(npmrcConfig: "${options['NPM_CONFIG_ID']}") {
+        container('node') {
+          stage('Install') {
+            sh "npm install"
+          }
+          stage('Build') {
+            sh "npm run build"
+            //On archive les artefacts pour l'upload
+            archiveArtifacts 'dist/**/*'
+          }
+          stage('Test') {
+            // Instruction npm de test en environnement d'intégration continue
+            // Cette instruction générique peut être modifiée par les projets suivants le framework utilisé :
+            // angular : sh "npm test -- --watch=false --code-coverage"
+            // react : sh "CI=true npm test -- --coverage"
+            sh "npm test"
+          }
+        }
+      }
+      container('sonar-scanner') {
+        stage('Qualimetrie') {
+          withSonarQubeEnv("sonarqube") {
+            sh "sonar-scanner -Dsonar.projectKey=${options['PROJECT_SONAR_KEY']} -Dsonar.projectName=${env.NAME} -Dsonar.projectVersion=${TAG_RELEASE}"
+          }
+        }
+
+        currentBuild.result = 'SUCCESS'
+      }
+
+    } catch (all) {
+      currentBuild.result = 'FAILURE'
+      //Envoi d'un mail en cas d'échec - COMMENTE EN ATTENTE DE L'INSTALLATION DU PLUGIN EMAIL EXT
+      //voir https://jenkins.io/doc/pipeline/steps/email-ext/ pour plus de précisions
+      emailext(
+        body: '${DEFAULT_CONTENT}',
+        subject: '${DEFAULT_SUBJECT}',
+        //envoie du mail aux développeurs responsables d'une modification du code
+        recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+        //Pour également envoyer le mail à une liste d'adresses (séparées par des ,)
+        //  to : "adressmail1, adressmail2"
+      )
+      throw all
+    }
+  }
+}

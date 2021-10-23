@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    image: postgres:10.9
+    restart: always
+    environment:
+      - POSTGRES_USER=asr
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=asr
+    volumes:
+      - ./db-script:/docker-entrypoint-initdb.d/
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready --dbname asr --username=asr']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  web:
+    depends_on:
+      - db
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./DockerFile
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U asr']
+      interval: 10s
+      timeout: 5s
+      retries: 5

@@ -1,0 +1,223 @@
+#!/usr/bin/env groovy
+//Version templatefile node : 1.5.1
+
+//déclaration de la shared library build_libs
+@Library('build_libs') _
+
+def options = [
+  // Paramètre optionnel : Id du credential nexus pour la publication
+  // CREDENTIAL_NEXUS_ID: '{{credential-nexus-id}}',
+  // Paramètre optionnel : Url du nexus utilisé pour la publication
+  // NEXUS_URL: '{{nexus-url}}',
+  // Paramètre optionnel : Id du repository nexus maven de type GROUPE du projet
+  // GROUP_REPOSITORY_NEXUS_ID: '{{group-repository-nexus-id}}',
+  // Paramètre optionnel : groupId utilisé pour l'upload maven sur nexus
+  // GROUP_ID: '{{maven-groupId}}',
+  // Paramètre optionnel : Id de la config globale npm à utiliser
+  // NPM_CONFIG_ID: '{{maven-groupId}}',
+  // Propriétés spécifiques au job
+  // Paramètre optionnel : Nom de la connexion à Gitlab
+  // GITLAB_NAME: '{{gitlab}}',
+  // Paramètre optionnel : Clé sonar pour les analyses
+  // PROJECT_SONAR_KEY: '{{project_sonar_key}}',
+  // Paramètre obligatoire : Nombre de build a conserver dans l'historique
+  NUM_TO_KEEP : 10,
+  // Paramètre obligatoire : Version de node utilisée pour le build
+  NODE_VERSION: 'carbon'
+]
+
+
+/** Spécifique pour les builds docker */
+def prepareBuildDocker = [:]
+//Pour activer des paramètres optionnels, commenter la ligne précédente et décommenter et valoriser les lignes qui suivent en fonction du besoin
+/*
+def prepareBuildDocker = [
+
+  // Paramètre optionnel :
+  // Id du credentials Jenkins à utiliser pour que le build docker puisse tirer les images From des dockerfiles lorsque présentes sur une organisation privée de la DTR et non publique.
+  // 'credentialsIdBuild': '{{credentialsIdBuild }}',
+
+  // Paramètre optionnel :
+  // Nom du dépôt maven du service nexus sur lequel seront poussés les binaires lors de ce build.
+  // Il sera injecté en tant que build-arg "REPO_NAME" lors du build de l'image. Les dockerfiles doivent contenir l'instruction ARG REPO_NAME
+  // 'repoBinaires':'{{ maven-repo }}',
+
+  // Paramètre optionnel :
+  // id du credential permettant de downloader les binaires présents sur le service Nexus
+  // 'credentialsIdDownload':'{{credentialsId-download}}',
+
+  // Paramètre optionnel :
+  // Le nom des images est construit à partir du nom du dépôt git. Ce paramètre permet d'utiliser une valeur différente à la place du nom du dépot.
+  // Pour les projets multi-modules, le nom de l'image sera construite à partir de ce préfixe et du nom du module dans les sources sous le dossier docker.
+  // Pour les projets non modulaire, le nom de l'image correspondra à ce préfixe.
+  //'prefixImage': '{{ prefix-Image }}',
+
+  //Paramètre optionnel :
+  //Permet de passer en argument du build docker une variable no_proxy, qui par défaut est valorisée avec les adresses en .sncf.fr et l'adresse du nexus metier
+  //'no_proxy': '{{ no-proxy}}',
+
+  //Paramètre optionnel:
+  //Permet de passer des arguments au build des images docker.
+  // Les valeurs possibles sont des listes de dictionnaires disposant des clés 'name' et 'value'.
+  // Par exemple, [ [ 'name':'BUILD', 'value':'docker' ], ['name': 'OS', 'value': 'ubuntu' ] ]
+  // permettra d'ajouter à la commande build "--build-arg BUILD='docker' --build-arg OS='ubuntu'"
+  //'buildArgs': [ ],
+]
+*/
+
+//Valorisation des options par défaut
+options = defaultBuildOptions(options)
+
+//Propriétés du job
+properties([
+  [$class: 'BuildConfigProjectProperty'],
+  //Connexion Gitlab
+  gitLabConnection("${options['GITLAB_NAME']}"),
+  //Conservation des 10 dernières éxecutions
+  buildDiscarder(logRotator(numToKeepStr: "${options['NUM_TO_KEEP']}")),
+  //Paramètres du build de release BRANCH_RELEASE, RELEASE_VERSION et DEVELOPMENT_VERSION
+  parameters([string(defaultValue: 'master', description: 'nom de la branche à releaser', name: 'BRANCH_RELEASE'),
+              string(defaultValue: '', description: 'version de la release à construire (format: X.Y.Z)', name: 'RELEASE_VERSION'),
+              string(defaultValue: '', description: 'prochaine version de développement (format: X.Y.Z-SNAPSHOT)', name: 'DEVELOPMENT_VERSION')])
+])
+
+//Le nom du build prend le nom de la version a releaser
+currentBuild.displayName = "${RELEASE_VERSION}"
+
+//Plugin timestamp pour afficher le temps à chaque ligne de log
+timestamps {
+  withTools([
+    [name: 'node', version: "${options['NODE_VERSION']}"],
+    [name: 'sonar-scanner', image: 'sonar-scanner', registry: 'eul']
+  ]) {
+    try {
+      stage('Récupération code source') {
+        // Récupération de l'url du dépôt git
+        scmInfo = checkout scm
+        env.GIT_URL = scmInfo.GIT_URL
+        //Recupération de l'Id du credentials gitlab de l'user du groupement projets
+        env.CREDENTIALS_ID_GITLAB = scmCredentials(scm)
+        env.GIT_COMMIT = scmInfo.GIT_COMMIT
+        prepareBuildDocker['version'] = "${RELEASE_VERSION}"
+      }
+      //Vérification de l'unicité du tag
+      stage('Verification du tag') {
+        SEARCH_TAG = sh(
+          script: "git tag -l ${RELEASE_VERSION}",
+          returnStdout: true
+        ).trim()
+        if (SEARCH_TAG == RELEASE_VERSION) {
+          println "Le tag ${RELEASE_VERSION} existe déjà"
+          error "Le tag ${RELEASE_VERSION} existe déjà"
+        }
+      }
+      stage('Extraction information package.json') {
+        container('node') {
+          if (!fileExists('package.json')) {
+            currentBuild.result = 'FAILURE'
+            error 'Le fichier package.json n\'est pas présent à la racine du projet'
+          }
+          //Récupération de l'attribut name de package.json
+          env.NAME = sh(script: "node -p \"require('./package.json').name\"", returnStdout: true).trim()
+          println "Nom extrait du package.json : ${env.NAME}"
+        }
+      }
+      configFileProvider([configFile(fileId: "${options['NPM_CONFIG_ID']}", variable: 'NPM_SETTINGS')]) {
+        container('node') {
+          /*stage('Mise à jour de la version') {
+            sh "git config --global user.email 'pic-eul@sncf.com'"
+            sh "git config --global user.name 'PIC e.UL'"
+            //option pour ne pas ajouter un v devant la version dans le tag
+            sh "npm config set tag-version-prefix=''"
+            sh "npm version ${RELEASE_VERSION}"
+          }*/
+          stage('Install') {
+            sh "npm install"
+          }
+          stage('Build') {
+            sh "npm run build"
+            // Pour conserver le contenu du dossier dist tant que
+            // l'historique du build est conservé
+            archiveArtifacts '*'
+          }
+          stage('Test') {
+            // Instruction npm de test en environnement d'intégration continue
+            // Cette instruction générique peut être modifiée par les projets suivants le framework utilisé :
+            // angular : sh "npm test -- --watch=false --code-coverage"
+            // react : sh "CI=true npm test -- --coverage"
+            sh "npm test"
+          }
+        }
+      }
+      /*container('sonar-scanner') {
+        stage('Controle du passage de la Quality Gate') {
+          withSonarQubeEnv("sonarqube") {
+            sh "sonar-scanner -Dsonar.projectKey=${options['PROJECT_SONAR_KEY']} -Dsonar.projectName=${env.NAME} -Dsonar.projectVersion=${RELEASE_VERSION}"
+          }
+          timeout(time: 1, unit: 'HOURS') {
+            def qg = waitForQualityGate()
+            if (qg.status != 'OK') {
+              println "Release annulée à cause du statut de la Quality Gate: ${qg.status}"
+              error "Release annulée à cause du statut de la Quality Gate: ${qg.status}"
+            }
+          }
+        }
+      }*/
+      stage('Publish') {
+        def archiveFile = "${env.NAME}-${RELEASE_VERSION}.tar.gz"
+        /* Création du tar.gz du dossier dist, possibilité d'ajouter cette étape
+        *  dans le postbuild défini dans le package.json : "postbuild": "tar -zcvf {nom_archive}.tar.gz dist/*"
+        *  Pour ne pas inclure le dossier parent dist, remplacer par un "cd dist && tar -zcvf {nom_archive}.tar.gz *"
+        *  et mettre à jour le paramètre file de l'appel au nexusArtifactUploader (le préfixer par dist/)
+        */
+        sh "tar -zcvf ${archiveFile} *"
+
+        nexusArtifactUploader(
+          artifacts: [
+            [artifactId: "${env.NAME}",
+             file      : "${archiveFile}",
+             type      : 'tar.gz']],
+          credentialsId: "${options['CREDENTIAL_NEXUS_ID']}",
+          groupId: "${options['GROUP_ID']}",
+          nexusUrl: "${options['NEXUS_URL']}",
+          nexusVersion: 'nexus3',
+          protocol: 'https',
+          repository: "${options['GROUP_REPOSITORY_NEXUS_ID']}-releases",
+          version: "${RELEASE_VERSION}"
+        )
+      }
+      stage('Mise à jour version de développement') {
+        container('node') {
+          sh "npm version ${DEVELOPMENT_VERSION} --no-git-tag-version"
+        }
+      }
+
+      //Décommenter pour activer le build docker
+      /*
+      if (currentBuild.result != 'FAILURE'){
+        // Réalise les étapes de builds et de push des images des modules du projet
+        buildDocker(prepareBuildDocker)
+      }*/
+
+      //voir https://jenkins.io/doc/pipeline/steps/gitlab-plugin/ pour plus de précisions
+      updateGitlabCommitStatus name: 'build', state: 'success'
+      currentBuild.result = 'SUCCESS'
+
+    } catch (all) {
+
+      currentBuild.result = 'FAILURE'
+      //Envoi d'un mail en cas d'échec
+      //voir https://jenkins.io/doc/pipeline/steps/email-ext/ pour plus de précisions
+      emailext(
+        body: '${DEFAULT_CONTENT}',
+        subject: '${DEFAULT_SUBJECT}',
+        //envoie du mail aux développeurs responsables d'une modification du code
+        recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+        //Pour également envoyer le mail à une liste d'adresses (séparées par des ,)
+        //  to : "adressmail1, adressmail2"
+      )
+
+      throw all
+    }
+  }
+}

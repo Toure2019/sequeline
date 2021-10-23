@@ -1,0 +1,699 @@
+{
+  "temps_credite": {
+    "libelle": "Temps crédité",
+    "type": "hour",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "0",
+    "enable_in_settings": "1",
+    "config": false,
+    "special": true
+  },
+  "grp_hours": {
+    "libelle": "Horaires",
+    "data": {
+      "code_hour": {
+        "libelle": "Code",
+        "grp": "grp_hours",
+        "type": "text",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "service_start": {
+        "libelle": "Début",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "pause_start": {
+        "libelle": "Coupure",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "pause_end": {
+        "libelle": "Coupure fin",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "service_end": {
+        "libelle": "Fin",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "planning_temps_credite": {
+        "libelle": "Temps crédité",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "planning_temps_restant": {
+        "libelle": "Temps restant",
+        "grp": "grp_hours",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      }
+    }
+  },
+  "grp_ecart": {
+    "libelle": "Ecart",
+    "data": {
+      "ecart_start": {
+        "libelle": "Début",
+        "grp": "grp_ecart",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "ecart_end": {
+        "libelle": "Fin",
+        "grp": "grp_ecart",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "ecart_prolongation_acc": {
+        "grp": "grp_ecart",
+        "libelle": "Prolongation",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "ecart_relevage": {
+        "grp": "grp_ecart",
+        "libelle": "Relevage",
+        "type": "list",
+        "type_return": "text",
+        "list": "ecart_relevage",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "ecart_duree_trajet_hs": {
+        "grp": "grp_ecart",
+        "libelle": "Durée trajet HS",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      }
+    }
+  },
+  "grp_trajet": {
+    "libelle": "Trajet",
+    "data": {
+      "trajet_aller_date_start": {
+        "grp": "grp_trajet",
+        "libelle": "Aller début",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "trajet_aller_date_end": {
+        "grp": "grp_trajet",
+        "libelle": "Aller fin",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "trajet_retour_date_start": {
+        "grp": "grp_trajet",
+        "libelle": "Retour début",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "trajet_retour_date_end": {
+        "grp": "grp_trajet",
+        "libelle": "Retour fin",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      },
+      "transport": {
+        "grp": "grp_trajet",
+        "libelle": "Mode de Transport",
+        "type": "text",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "0",
+        "config": false,
+        "special": true
+      }
+    }
+  },
+  "grp_tk_ti": {
+    "libelle": "TK TI",
+    "data": {
+      "tk": {
+        "grp": "grp_tk_ti",
+        "libelle": "TK",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": false,
+        "special": true
+      },
+      "ti": {
+        "grp": "grp_tk_ti",
+        "libelle": "TI",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": false,
+        "special": true
+      }
+    }
+  },
+  "grp_abs_hrs": {
+    "libelle": "Abs horaires",
+    "data": {
+      "code_abs": {
+        "grp": "grp_abs_hrs",
+        "libelle": "Abs horaires",
+        "type": "hour",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": false,
+        "special": true
+      }
+    }
+  },
+  "grp_forfait_jour": {
+    "libelle": "Agent forfait jour",
+    "data": {
+      "need_help_take_repos": {
+        "grp": "grp_forfait_jour",
+        "libelle": "Difficultés rencontrées dans la prise des repos quotidiens et de fins de semaine",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "0",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "need_entretien": {
+        "grp": "grp_forfait_jour",
+        "libelle": "Demande d'entretien au titre du signalement sur la charge de travail",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "0",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "indemn_surcroit_trav_excep": {
+        "grp": "grp_forfait_jour",
+        "libelle": "Indemnité de surcroit de travail exceptionnel",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "0",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "pref_be_payed": {
+        "grp": "grp_forfait_jour",
+        "libelle": "Ecarts : Préfère être payé",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "0",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      }
+    }
+  },
+  "grp_in2974": {
+    "libelle": "IN2974",
+    "data": {
+      "CD01": {
+        "grp": "grp_in2974",
+        "libelle": "CD01",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "CQ01_02": {
+        "grp": "grp_in2974",
+        "libelle": "CQ01 - CQ02",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "QI_QC_QM_99": {
+        "grp": "grp_in2974",
+        "libelle": "QI/QC99 - QM99",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "ET01": {
+        "grp": "grp_in2974",
+        "libelle": "ET01",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      },
+      "EI01": {
+        "grp": "grp_in2974",
+        "libelle": "EI01",
+        "type": "checkbox",
+        "display_in_rapport": "1",
+        "display_in_settings": "1",
+        "enable_in_rapport": "1",
+        "enable_in_settings": "1",
+        "config": true,
+        "special": true
+      }
+    }
+  },
+  "deplacements": {
+    "libelle": "Liste des déplacements",
+    "type": "other",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "0",
+    "enable_in_settings": "1",
+    "config": false,
+    "special": true
+  },
+  "indemn_deplacements_vm00_km": {
+    "libelle": "Km voiture",
+    "type": "inputtext",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "codeIndReposHorsZNELogement": {
+    "libelle": "Ind repos<br/>hors ZNE (CD01)",
+    "type": "checkbox",
+    "display_in_rapport": "0",
+    "display_in_settings": "0",
+    "enable_in_rapport": "0",
+    "enable_in_settings": "0",
+    "config": false,
+    "special": true
+  },
+  "indemn_repas_force": {
+    "libelle": "Repas",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": true
+  },
+  "indemn_decouche_force": {
+    "libelle": "Découcher",
+    "type": "compteur",
+    "display_in_rapport": "0",
+    "display_in_settings": "0",
+    "enable_in_rapport": "0",
+    "enable_in_settings": "0",
+    "config": true,
+    "special": true
+  },
+  "indemn_complete": {
+    "libelle": "Complète",
+    "type": "checkbox",
+    "display_in_rapport": "0",
+    "display_in_settings": "0",
+    "enable_in_rapport": "0",
+    "enable_in_settings": "0",
+    "config": false,
+    "special": true
+  },
+  "no_ticket_resto": {
+    "libelle": "Droit à ticket restaurant",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "special_nuit": {
+    "libelle": "Spécial nuit",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": true
+  },
+  "travaux_nuit_is": {
+    "libelle": "Travaux nuit",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "travaux_nuit",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "special_travaux_nuit_is": {
+    "libelle": "Spécial travaux nuit",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "special_travaux_nuit",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "continuite_service_rempl_ic": {
+    "libelle": "Continuité service remplacement",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "continu_serv_rempl",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_grue_gr": {
+    "libelle": "Grue automobile ou portique",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "indemn_grue",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_journ_manoeuvre_mv": {
+    "libelle": "Indemnité journalière de manoeuvres (MV00)",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_supp_manoeuvre_mh": {
+    "libelle": "Indemnité horaire suppl. de manoeuvres (MH00)",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_tracteur_tr": {
+    "libelle": "Indemnité journalière de tracteur",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "indemn_tracteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "conduite_engin_ferrov_tq": {
+    "libelle": "Conduite engins ferroviaires (TQ00)",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_conduite_tx": {
+    "libelle": "Conduite véhicule",
+    "type": "checklist",
+    "type_return": "checkbox",
+    "list": "indemn_conduite_tx",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "plaque_vehicule": {
+    "libelle": "Plaque véhicule",
+    "type": "inputtext",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_panier": {
+    "libelle": "Panier",
+    "type": "checklist",
+    "type_return": "checkbox",
+    "list": "indemn_panier",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "prime_agent_ttx": {
+    "libelle": "Indemnité trains travaux (TV00)",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_de_saisie": {
+    "libelle": "Ind. de saisie",
+    "type": "hour",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_travail_salissant": {
+    "libelle": "Travail salissant 1/2J",
+    "libelle_rapport": "Travail salissant (TW00)",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_travail_penible": {
+    "libelle": "Travail pénible 1/2J",
+    "libelle_rapport": "Travail pénible (TP00)",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_travail_tunnel": {
+    "libelle": "Travail tunnel 1/2J",
+    "libelle_rapport": "Travail tunnel (TV00)",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "astreinte_tx": {
+    "libelle": "Taux (AS99/AT99)",
+    "type": "list",
+    "type_return": "checkbox",
+    "list": "astreinte_tx",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "astreinte_rs": {
+    "libelle": "RS (crédit) 1/4J",
+    "libelle_rapport": "RS (crédit)",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "indemn_sortie_tx": {
+    "libelle": "Sortie taux b",
+    "libelle_rapport": "Sortie tx b",
+    "type": "compteur",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "commentaire": {
+    "libelle": "Commentaire",
+    "type": "text",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": true
+  },
+  "ff01_face_a_face_pedago": {
+    "libelle": "Face à face pédagogique (FF01)",
+    "type": "hour",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": true
+  },
+  "ics_remplacement": {
+    "libelle": "ICS de remplacement",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  },
+  "astr_chaleur": {
+    "libelle": "Astreinte chaleur",
+    "type": "checkbox",
+    "display_in_rapport": "1",
+    "display_in_settings": "1",
+    "enable_in_rapport": "1",
+    "enable_in_settings": "1",
+    "config": true,
+    "special": false
+  }
+}
