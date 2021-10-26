@@ -47,7 +47,7 @@ export const getChantiersQuery = (equipeId: string, year: number, weekNumber: nu
 export const checkExistingChantiersQuery = (year: number, weekNumber: number, compteId: number, condition: string, sousEquipe: string) => {
     return `
     SELECT id FROM t_inter_chantier
-    WHERE t_equipe_id='${sousEquipe}' 
+    WHERE t_equipe_id='${sousEquipe}'
     AND num_semaine = '${weekNumber}'
     AND annee = '${year}'
     AND t_compte_id='${compteId}'
@@ -76,7 +76,7 @@ export const checkExistingChantiersQuery = (year: number, weekNumber: number, co
 export const getCompteQuery = (currentDate: string, compteId: number) => {
     return `
     SELECT id, pc, activite, projet FROM t_compte
-    WHERE id='${compteId}' 
+    WHERE id='${compteId}'
     AND date_effet <= '${currentDate}'
     AND date_effet_end > '${currentDate}'`
 }
@@ -113,7 +113,7 @@ export const getCompteERPQuery = (currentDate: string, compte: any) => {
 /** Insérer un chantier */
 export const insertChantierQuery = (compteId: number, compteERP: any, weekNumber: number, year: number, userId: string, sousEquipe: string, segementDeGestion: string, condition: string) => {
     return `
-    INSERT INTO t_inter_chantier (t_compte_id, t_compte_erp_id, num_semaine, annee, t_user_id, t_equipe_id, t_segment_gestion_id, t_cpr_id) 
+    INSERT INTO t_inter_chantier (t_compte_id, t_compte_erp_id, num_semaine, annee, t_user_id, t_equipe_id, t_segment_gestion_id, t_cpr_id)
     VALUES ('${compteId}','${compteERP?.id}','${weekNumber}','${year}','${userId}','${sousEquipe}','${segementDeGestion}', '${condition}') RETURNING id;`
 }
 /**
@@ -154,7 +154,7 @@ export const getUserPlanningInOneDayQuery = (employeeId: string, day: string) =>
         WHERE planning.id_t_user='${employeeId}'
         AND t_code_hours_absence.id = planning.id_t_code_hours_prevision
         AND planning.date='${day}'
-    `;
+    `
 }
 
 
@@ -167,15 +167,19 @@ export const getChantierEmployeesQuery = (chantierId: string, currentDate: strin
         AND t_inter_chantier.t_equipe_id = t_user_properties.t_equipe_id
         AND t_user_properties.t_user_id = t_user.id
         AND t_user_properties.date_effet <= '${currentDate}'
-        AND t_user_properties.date_effet_end > '${currentDate}' 
-    `;
+<<<<<<< HEAD
+        AND t_user_properties.date_effet_end > '${currentDate}'
+=======
+        AND t_user_properties.date_effet_end > '${currentDate}'
+>>>>>>> develop
+    `
 }
 
 /** Rattacher un chantier donné à tous les agents de la sous-équipe */
 export const addEmployeesToChantierQuery = (chantierId: string, userId: string, currentDate: string) => {
     return `
         INSERT INTO t_user_inter_chantier VALUES (${chantierId}, '${currentDate}', ${userId}, '00:00:00', 0)
-    `;
+    `
 }
 
 /** Récupérer un chantier par id */
@@ -184,7 +188,7 @@ export const getChantierByIdQuery = (chantierId: string) => {
     SELECT id, commentaire
     FROM t_inter_chantier
     WHERE id='${chantierId}'
-    `;
+    `
 }
 
 /** Mise à jour du commentaire d'un chantier donné */
@@ -193,7 +197,7 @@ export const updateChantierCommentaireQuery = (chantierId: string, commentaire: 
     UPDATE t_inter_chantier
     SET commentaire='${commentaire}'
     WHERE id='${chantierId}'
-    `;
+    `
 }
 
 
@@ -204,7 +208,7 @@ export const updateAgentImputationChantierQuery = (chantierId: string, date: str
     SET duration='${duration ? duration : '00:00'}'
     WHERE t_inter_chantier_id='${chantierId}'
     AND t_user_planning_date='${date}'
-    AND t_user_planning_t_user_id='${employeeId}'`;
+    AND t_user_planning_t_user_id='${employeeId}'`
 }
 
 /** Récupérer un code JS */
@@ -212,5 +216,22 @@ export const getCodeJSQuery = (codeJS: string, currentEtablissement: string) => 
     return `
     SELECT id, duree_journee, duree_pauses, duree_coupures
     FROM code_hours
-    WHERE code_hour='${codeJS}' AND code_t_etablissement='${currentEtablissement}'`;
+    WHERE code_hour='${codeJS}' AND code_t_etablissement='${currentEtablissement}'`
+}
+
+/** Récupérer un code absence */
+export const findCodeAbsenceQuery = (codeJS: string, currentEtablissement: string) => {
+    return  `SELECT code_hour
+    FROM t_code_hours_absence
+    WHERE id_t_compte IS NOT NULL
+    AND code_hour='${codeJS}'
+    ${currentEtablissement ? `AND code_t_etablissement = '${currentEtablissement}'` : '' };`
+}
+
+/** Récupérer le total passé sur les chantiers pour un agent sur une journée */
+export const getTotalWorkTimeInOneDayQuery = (employeeId: string, date: string) => {
+    return  `SELECT duration
+    FROM t_user_inter_chantier
+    WHERE t_user_planning_t_user_id ='${employeeId}'
+    AND t_user_planning_date='${date}';`
 }

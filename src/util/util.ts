@@ -2,6 +2,7 @@ import moment from 'moment'
 
 export const DAYNTERVAL = 1000 * 60 * 60 * 24
 export const DATEFORMAT = 'YYYY-MM-DD'
+export const DATEFORMATL = 'YYYY-MM-DD HH:mm'
 
 export const removeUndefined = (obj: any) => {
   for (const m in obj) {

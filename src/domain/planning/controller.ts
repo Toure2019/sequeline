@@ -67,3 +67,5 @@ export const updatePlanning = async (req: Request, res: Response) => {
 
     res.send(data)
 }
+
+

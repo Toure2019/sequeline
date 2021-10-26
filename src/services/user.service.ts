@@ -36,7 +36,7 @@ class Service {
     static async getUserProfils(user: any, userEtablissement: any) {
         try {
             const profils: any[] = await sequelize.query(getUserProfilsQuery(user.id), { type: QueryTypes.SELECT, nest: true })
-        
+
             return await Promise.all(
                 profils.map(async (profil: any) => {
 
@@ -141,7 +141,8 @@ class Service {
 
     static async getUsersBySousEquipe(sousEquipeId: string, etablissementCode: string, currentDate: string) {
         try {
-            return await sequelize.query(getUsersBySousEquipeQuery(sousEquipeId, etablissementCode, currentDate), { type: QueryTypes.SELECT, nest: true})
+
+            return  await sequelize.query(getUsersBySousEquipeQuery(sousEquipeId, etablissementCode, currentDate), { type: QueryTypes.SELECT, nest: true});
 
           } catch(e) {
             throw new Error(e.message)

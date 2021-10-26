@@ -21,7 +21,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     const result = await Service.getUserByCredentials(validation.result)
-    
+
     if (result.error) {
       throw new UnauthorizedError(result.error.userMessage)
     }

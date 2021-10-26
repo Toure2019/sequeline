@@ -319,11 +319,11 @@ export const updateChantierCommentaire = async (req: Request, res: Response, nex
   }
 }
 
-export const updateImputationChantier = async (req: Request, res: Response, next: NextFunction) => {
+export const updateImputationChantier = async (req: Request, res: Response) => {
   try {
-    const { chantierId, shakedState, currentEtablissement } = req.body
+    const { chantierId, shakedState } = req.body
    
-    await Service.updateImputationChantier(chantierId, shakedState, currentEtablissement)
+    await Service.updateImputationChantier(chantierId, shakedState)
 
     res.status(200).json({saved: true})
 

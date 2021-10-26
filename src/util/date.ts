@@ -42,3 +42,10 @@ const getSaturday = (y: number = 2021, step: number = 1) => {
     `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
   )
   
+  export const getMinutes = (value: string) => +(value.split(':')[0]) * 60 + +(value.split(':')[1]) // 07:45 => 465 minutes
+
+  export const minutesToHHMM = (totalMinutes: number) => {
+    const hours = Math.trunc(totalMinutes / 60)  
+    const minutes = totalMinutes % 60
+    return `${Math.abs(hours).toString().padStart(2, '0')}:${Math.abs(minutes).toString().padStart(2, '0')}`
+  }

@@ -1,31 +1,25 @@
-import express from 'express'
-import compression from 'compression' // compresses requests
-import bodyParser from 'body-parser'
-import path from 'path'
-import cors from 'cors'
-import * as moment from 'moment'
-import auth from './middleware/auth'
+/* eslint-disable semi */
+import express from 'express';
+import compression from 'compression'; // compresses requests
+import bodyParser from 'body-parser';
+import path from 'path';
+import cors from 'cors';
+import * as moment from 'moment';
+import auth from './middleware/auth';
 
 // Controllers (route handlers)
-import { authWithToken, login } from './controllers/auth.controller'
-import {
-  getUserInformations,
-  getAllUtilisateursByListEquipe
-} from './domain/user/controller/user'
+import { authWithToken, login } from './controllers/auth.controller';
+import { getUserInformations, getAllUtilisateursByListEquipe } from './domain/user/controller/user';
 
-import {
-  getUserHistorique,
-} from './domain/user/controller/userProperties'
+import { getUserHistorique } from './domain/user/controller/userProperties';
 
-import {
-  getEtablissements,
-} from './domain/etablissement/controller'
+import { getEtablissements } from './domain/etablissement/controller';
 
-import { getAllDepartementsUos } from './domain/uo/controller'
-import { getPlanning, profilePlanning, updatePlanning } from './domain/planning/controller'
-import { getUserListsBySousEquipe, getUsersList, updateUserMailAndPhone } from './controllers/user.controller'
-import { getUOsList } from './controllers/uo.controller'
-import { getSousEquipesList } from './controllers/sousEquipe.controller'
+import { getAllDepartementsUos } from './domain/uo/controller';
+import { getPlanning, profilePlanning, updatePlanning } from './domain/planning/controller';
+import { getAgents, getUserListsBySousEquipe, getUsersList, updateUserMailAndPhone } from './controllers/user.controller';
+import { getUOsList } from './controllers/uo.controller';
+import { getSousEquipesList } from './controllers/sousEquipe.controller';
 import {
   getChantiersList,
   getComptes,
@@ -38,88 +32,92 @@ import {
   getPlanningChantier,
   updateChantierCommentaire,
   updateImputationChantier,
-} from './controllers/chantier.controller'
+} from './controllers/chantier.controller';
+import { insertDeplacement } from './controllers/deplacement.controller';
 
 // Create Express server
-const app = express()
+const app = express();
 
 // Express configuration
-app.set('port', process.env.PORT || 3000)
-app.use(compression())
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors())
+app.set('port', process.env.PORT || 3000);
+app.use(compression());
+app.use(bodyParser.json({ limit: '50mb' }));
+
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(cors());
 
 app.use((req, res, next) => {
-  res.locals.user = req.user
-  next()
-})
+  res.locals.user = req.user;
+  next();
+});
 
 // Configuration de moment
 moment.locale('fr', {
   week: {
     dow: 6, // First day of week is Saturday
-    doy: 12 // Used to determine first week of the year
-  }
-})
+    doy: 12, // Used to determine first week of the year
+  },
+});
 
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * Primary app routes.
  */
- app.use('/api', router)
+app.use('/api', router);
 
 /**
  * Public routes
-*/
-router.post('/auth/login', login)
-router.post('/auth/token', authWithToken)
+ */
+router.post('/auth/login', login);
+router.post('/auth/token', authWithToken);
 
 /**
  * Protected routes
-*/
+ */
 
 // Administration
-router.get(
-  '/etablissement/all',
-  auth('Super User', 'Administrateur RH', 'Administrateur comptable'),
-  getEtablissements
-)
-router.get('/departements/uos', auth(), getAllDepartementsUos)
+router.get('/etablissement/all', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getEtablissements);
+router.get('/departements/uos', auth(), getAllDepartementsUos);
 
-router.get('/utilisateurs', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getUsersList)
-router.get('/utilisateur', auth(), getUserInformations)
-router.put('/utilisateur', auth(), updateUserMailAndPhone)
-router.get('/utilisateur/historique', auth(), getUserHistorique)
-router.get('/equipes/utilisateurs', auth(), getAllUtilisateursByListEquipe)
-router.get('/utilisateurs/equipe', auth(), getUserListsBySousEquipe)
+router.get('/utilisateurs', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getUsersList);
+router.get('/utilisateur', auth(), getUserInformations);
+router.put('/utilisateur', auth(), updateUserMailAndPhone);
+router.get('/utilisateur/historique', auth(), getUserHistorique);
+router.get('/equipes/utilisateurs', auth(), getAllUtilisateursByListEquipe);
+router.get('/utilisateurs/equipe', auth(), getUserListsBySousEquipe);
 
-router.get('/uos', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getUOsList)
+router.get('/uos', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getUOsList);
 
-router.get('/equipes', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getSousEquipesList)
+router.get('/equipes', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getSousEquipesList);
 
 // Chantiers
-router.get('/typesChantier', auth(), getTypesChantier)
-router.get('/specialites', auth(), getSpecialites)
-router.get('/familles', auth(), getFamilles)
-router.get('/natures', auth(), getNatures)
-router.get('/conditionsIntervention', auth(), getConditionsIntervention)
-router.get('/comptes', auth(), getComptes)
-router.post('/chantier', auth(), insertChantier)
-router.get('/chantiers', auth(), getChantiersList)
-router.get('/planningChantier', auth(), getPlanningChantier)
-router.put('/chantier/commentaire/update', auth(), updateChantierCommentaire)
-router.post('/imputationChantier', auth(), updateImputationChantier)
+router.get('/typesChantier', auth(), getTypesChantier);
+router.get('/specialites', auth(), getSpecialites);
+router.get('/familles', auth(), getFamilles);
+router.get('/natures', auth(), getNatures);
+router.get('/conditionsIntervention', auth(), getConditionsIntervention);
+router.get('/comptes', auth(), getComptes);
+router.post('/chantier', auth(), insertChantier);
+router.get('/chantiers', auth(), getChantiersList);
+router.get('/planningChantier', auth(), getPlanningChantier);
+router.put('/chantier/commentaire/update', auth(), updateChantierCommentaire);
+router.post('/imputationChantier', auth(), updateImputationChantier);
 
 // Planning import V2
-router.post('/import/planning/profile', auth(), profilePlanning)
-router.post('/import/planning/update', auth(), updatePlanning)
-router.get('/weekPlanning', auth(), getPlanning)
+router.post('/import/planning/profile', auth(), profilePlanning);
+router.post('/import/planning/update', auth(), updatePlanning);
+router.get('/weekPlanning', auth(), getPlanning);
 
-export default app
+//deplacement
+router.get('/listAgents', auth(), getAgents);
+
+// Deplacement
+router.post('/deplacements', auth(), insertDeplacement);
+
+export default app;
 
 // router.get('/bugl', auth('Super User', 'Administrateur RH', 'Administrateur comptable'), getAllBugl)
 // router.get('/division', auth(), getAllDivisions)

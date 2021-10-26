@@ -1,9 +1,10 @@
 import { QueryTypes } from 'sequelize'
 import { checkExistingChantiersQuery, getUserChantierInSpecificDate, getChantiersQuery, getCompteERPQuery,
-    getCompteQuery, getComptesQuery, getUserPlanningInOneDayQuery, insertChantierQuery, getChantierEmployeesQuery, addEmployeesToChantierQuery, getChantierByIdQuery, updateChantierCommentaireQuery, updateAgentImputationChantierQuery, getCodeJSQuery } from '../database/queries/chantier.queries'
+    getCompteQuery, getComptesQuery, getUserPlanningInOneDayQuery, insertChantierQuery, getChantierEmployeesQuery, addEmployeesToChantierQuery, getChantierByIdQuery, updateChantierCommentaireQuery, updateAgentImputationChantierQuery, getCodeJSQuery, findCodeAbsenceQuery, getTotalWorkTimeInOneDayQuery } from '../database/queries/chantier.queries'
 import sequelize from '../database/connection'
 import UserService from './user.service'
 import PlanningService from '../domain/planning/service'
+import { getMinutes, minutesToHHMM } from '../util/date'
 
 class Service {
     static getConditionsInterventionList() {
@@ -143,7 +144,6 @@ class Service {
     }
 
     static async getChantierPlanning(currentEtablissement: string, chantierId: string, currentDate: string, weekDays: string[]) {
-        
         try {
             const days = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']
 
@@ -157,18 +157,37 @@ class Service {
                         weekDays.map(async (day, index) => {
                             let value = undefined
                             let tempsRestant = undefined
-        
+                            let tempsPrevu = 0
+
+                            // Le temps de travail total de l'agent sur la journée
+                            const totalTempsTravailleSurLaJournee = await Service.getTotalWorkTimeInOneDay(employee.id, day)
+
+                            // Chantier sur lequel l'agent a travaillé
+                            const userChantierInSpecificDay: any = await sequelize.query(getUserChantierInSpecificDate(chantierId, (employee as any).id, day), { type: QueryTypes.SELECT, nest: true, plain: true})
+                            const chantierDuration = userChantierInSpecificDay ? userChantierInSpecificDay?.duration : 0
+
                             const userTAPInSpecificDay: any = await sequelize.query(getUserPlanningInOneDayQuery((employee as any).id, day), { type: QueryTypes.SELECT, nest: true, plain: true})
+                            // Vérifier si un TAP a été importé
                             if(userTAPInSpecificDay) {
                                 const codeHour = userTAPInSpecificDay.code_hour
+
                                 if(userTAPInSpecificDay.id_t_compte) {
-                                    value = codeHour
+                                    // Code Absence
+                                    value = chantierDuration ? chantierDuration.split(':').slice(0,2).join(':') : codeHour
                                 } else {
-                                    const codeJS: any = await sequelize.query(getCodeJSQuery(codeHour, currentEtablissement), { type: QueryTypes.SELECT, nest: true, plain: true}) 
-                                    const userChantierInSpecificDay: any = await sequelize.query(getUserChantierInSpecificDate(chantierId, (employee as any).id, day), { type: QueryTypes.SELECT, nest: true, plain: true})
-                                    value = userChantierInSpecificDay ? userChantierInSpecificDay?.duration?.split(':').slice(0,2).join(':') : '00:00';
-                                    const tempsTravail = value.split(':')[0] * 3600000 + value.split(':')[1] * 60000 
-                                    tempsRestant = ((codeJS.duree_journee - (codeJS.duree_coupures + codeJS.duree_pauses)) - tempsTravail) / 1000 //temps estant en secondes
+                                    // Code JS
+                                    const codeJS: any = await sequelize.query(getCodeJSQuery(codeHour, currentEtablissement), { type: QueryTypes.SELECT, nest: true, plain: true})
+                                    // Temps prévu dans le codeJS en minutes
+                                    tempsPrevu = (codeJS.duree_journee - (codeJS.duree_coupures + codeJS.duree_pauses)) / 60000
+                                    value = chantierDuration ? chantierDuration.split(':').slice(0,2).join(':') : '00:00'
+                                }
+                                // Calcul du temps restant
+                                const tempsRestantInMinutes = tempsPrevu - totalTempsTravailleSurLaJournee
+                                tempsRestant = `${(tempsRestantInMinutes < 0) ? '-' : ''}${minutesToHHMM(tempsRestantInMinutes)}`
+                            } else {
+                                if(userChantierInSpecificDay && userChantierInSpecificDay?.duration != '00:00:00') {
+                                    value = chantierDuration.split(':').slice(0,2).join(':')
+                                    tempsRestant = `-${minutesToHHMM(totalTempsTravailleSurLaJournee)}`
                                 }
                             }
 
@@ -178,7 +197,7 @@ class Service {
                                 tempsRestant,
                             }
                         })
-                    ) 
+                    )
 
                     return {
                         id: (employee as any).id,
@@ -187,6 +206,27 @@ class Service {
                     }
                 })
             )
+
+            const total = {
+                id: 'duree',
+                nom_complet: 'Durée',
+                name: 'Durée',
+                nameData: {
+                    type: 'total',
+                },
+            }
+            days.map((day, index) => {
+                let totalHours = 0
+                result.map((employeePlanning: any) => totalHours += (employeePlanning[day].value ?  getMinutes(employeePlanning[day].value) : 0))
+
+                total[days[index]] = {
+                    date: weekDays[index],
+                    value: minutesToHHMM(totalHours),
+                    type: 'total',
+                }
+            })
+
+            result.push(total)
 
             return {
                 chantierId,
@@ -234,7 +274,7 @@ class Service {
         let error = null
 
         chantier = await sequelize.query(getChantierByIdQuery(chantierId), {type: QueryTypes.SELECT, nest: true, plain: true})
-          
+
         if(!chantier){
             error = {
                 message: 'Chantier introuvable',
@@ -256,21 +296,32 @@ class Service {
         return {chantier, error}
     }
 
-    
-    static async updateImputationChantier(chantierId: string, planningChantier: any[], currentEtablissement: string) {
+
+    static async updateImputationChantier(chantierId: string, planningChantier: any[]) {
+
         return await Promise.all(planningChantier.map(async (employee: any) => {
             return await Promise.all(Object.entries(employee.planning).map(async (durationPerDay: [string, string]) => {
                 const date = durationPerDay[0]
                 const duration = durationPerDay[1]
-                if(! Service.isCodeAbsence(duration, currentEtablissement)) {
-                    await sequelize.query(updateAgentImputationChantierQuery(chantierId, date, employee.id, duration), {type: QueryTypes.INSERT})
+                if(! await Service.findCodeAbsence(duration)) {
+                    await sequelize.query(updateAgentImputationChantierQuery(chantierId, date, employee.id, duration), {type: QueryTypes.UPDATE})
                 }
             }))
         }))
     }
 
-    static async isCodeAbsence(code: string, currentEtablissement: string) {
-        return (await PlanningService.getAllCodeAbsence(currentEtablissement)).map((codeAbs: any) => codeAbs.code_hour === code)
+    static findCodeAbsence = async (code: string, ets?: string) => {
+        return await sequelize.query(findCodeAbsenceQuery(code, ets), { type: QueryTypes.SELECT, plain: true })
+    }
+
+    static getTotalWorkTimeInOneDay = async (employeeId: string, date: string) => {
+        const allDurations = await sequelize.query(getTotalWorkTimeInOneDayQuery(employeeId, date), { type: QueryTypes.SELECT })
+        let durations = 0
+        allDurations.forEach(function (elt: any) {
+            durations += getMinutes(elt.duration)
+        })
+
+        return durations
     }
 
 }
